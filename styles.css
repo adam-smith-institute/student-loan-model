@@ -47,14 +47,16 @@ body {
 
 .main-layout {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: minmax(180px, clamp(180px, 24vw, 240px)) minmax(0, 1fr);
   gap: 1rem;
   align-items: start;
+  min-width: 0;
 }
 
 .left-col {
   position: sticky;
   top: 1rem;
+  min-width: 0;
 }
 
 .right-col {
@@ -81,6 +83,7 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 1rem;
+  min-width: 0;
 }
 
 .control-grid,
@@ -306,7 +309,7 @@ button:disabled {
 .compare-card-grid {
   margin-top: 0.8rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 280px));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   gap: 0.8rem;
 }
 
@@ -368,7 +371,7 @@ button:disabled {
 }
 
 .chart-grid {
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
 }
 
 .chart-row {
@@ -389,7 +392,7 @@ button:disabled {
 }
 
 .chart {
-  min-height: 320px;
+  min-height: 300px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: white;
@@ -579,11 +582,22 @@ td {
   text-align: left;
 }
 
-@media (max-width: 760px) {
-  .app-shell {
-    padding: 0.8rem;
+@media (max-width: 1080px) {
+  .main-layout {
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+    gap: 0.8rem;
   }
 
+  .left-col {
+    top: 0.8rem;
+  }
+
+  .left-col .field-pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 980px) {
   .main-layout {
     grid-template-columns: 1fr;
   }
@@ -592,12 +606,18 @@ td {
     position: static;
   }
 
-  .field-pair {
-    grid-template-columns: 1fr;
-  }
-
   .chart-row-two-up {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    padding: 0.8rem;
+  }
+
+  .chart {
+    min-height: 260px;
   }
 }
 
@@ -606,3 +626,5 @@ td {
   color: white;
   margin: 0;
 }
+header a {
+  color: var(--brand-cream-hsl);}
