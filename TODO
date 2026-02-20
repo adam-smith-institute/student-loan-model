@@ -1,0 +1,7 @@
+[x] Add keys (overlay on top right to minimize space use)
+    [x] Loan Balance
+    [x] Annual Flows
+    [x] Income with Repayment Share
+[x] Add Income with Repayment Share for changed scenario.
+[x] Hide NPV (Government / HMT) and RAB Charge KPIs
+[x] Reduce the number of years shown on Annual Flows x-axis

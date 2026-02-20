@@ -1,0 +1,8 @@
+    :root {
+        --heading-font-font-family: "Josefin Sans";
+        --heading-font-font-weight: 400;
+        --body-font-font-family: "Crimson Text";
+        --brand-blue-hsl: 216.85,54.04%,46.08%;
+        --brand-cream-hsl: 37.67,84%,90%;
+        --brand-light-blue-hsl: 216.85, 54.04%, 94%;
+    }

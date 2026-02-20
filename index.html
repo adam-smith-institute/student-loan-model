@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UK Plan 2 Student Loan Model</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Josefin+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="brand-styles.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header v-if="!isEmbedded" class="app-header">
+        <div>
+          <h1>UK Plan 2 Student Loan Model</h1>
+        <p>This model allows users to simulate the effects of different changes to student loan parameters on a hypothetical existing 
+          Plan 2 borrower. It assumes that the borrowers' lifetime income follows the standard trajectory. </p>
+        </div>
+        <img class="asi-logo" src="./asi-logo.webp" alt="ASI logo" loading="lazy" decoding="async" />
+      </header>
+
+      <p class="disclaimer">
+        This is not financial advice and should not be used as such. The model is based on a number of assumptions and simplifications, and is not intended to be a precise predictor of individual outcomes. Last updated: 20 February 2026.
+      </p>
+
+      <div class="main-layout">
+        <aside class="left-col">
+          <section class="panel controls">
+            <h2>Inputs</h2>
+            <div class="control-actions">
+              <button type="button" class="reset-all-btn" @click="resetAllFields">Reset all defaults</button>
+              <button type="button" class="reset-all-btn" @click="shareScenario">Share this scenario</button>
+            </div>
+            <div class="control-grid">
+              <b>Borrower parameters</b>
+              <div>
+                <div class="preset-toggle" role="group" aria-label="Borrower presets">
+                  <button
+                    type="button"
+                    :class="{ active: isBorrowerPresetActive('high') }"
+                    @click="applyBorrowerPreset('high')"
+                  >
+                    High earner
+                  </button>
+                  <button
+                    type="button"
+                    :class="{ active: isBorrowerPresetActive('mid') }"
+                    @click="applyBorrowerPreset('mid')"
+                  >
+                    Mid-level earner
+                  </button>
+                  <button
+                    type="button"
+                    :class="{ active: isBorrowerPresetActive('low') }"
+                    @click="applyBorrowerPreset('low')"
+                  >
+                    Low-level earner
+                  </button>
+                </div>
+              </div>
+              <div class="field-pair">
+                <label>
+                  <div class="field-label-row">
+                    <span>Graduation year</span>
+                    <button type="button" class="reset-link" @click="resetField('graduationYear')">Reset</button>
+                  </div>
+                  <input type="number" min="2012" max="2023" v-model.number="borrowerInputs.graduationYear" />
+                </label>
+                <label>
+                  <div class="field-label-row">
+                    <span>Years of study</span>
+                    <button type="button" class="reset-link" @click="resetField('studyYears')">Reset</button>
+                  </div>
+                  <input type="number" min="1" max="7" step="1" v-model.number="borrowerInputs.studyYears" />
+                </label>
+              </div>
+              <p v-if="!isCohortEligible" class="control-error">
+                Plan 2 cohort guard: graduation year must be between 2012 and 2023.
+              </p>
+              <label>
+                <div class="field-label-row">
+                  <span>Starting salary (£)</span>
+                  <button type="button" class="reset-link" @click="resetField('startingSalary')">Reset</button>
+                </div>
+                <div class="gbp-input">
+                  <input
+                    type="number"
+                    min="15000"
+                    max="80000"
+                    step="500"
+                    v-model.number="borrowerInputs.startingSalary"
+                  />
+                  <span>£</span>
+                </div>
+              </label>
+
+              <div>
+                <div class="field-label-row">
+                  <span>Balance input method</span>
+                  <button type="button" class="reset-link" @click="resetField('balanceMode')">Reset</button>
+                </div>
+                <div class="balance-toggle" role="group" aria-label="Balance input method">
+                  <button
+                    type="button"
+                    :class="{ active: borrowerInputs.balanceMode === 'build-up' }"
+                    @click="borrowerInputs.balanceMode = 'build-up'"
+                  >
+                    Build-up
+                  </button>
+                  <button
+                    type="button"
+                    :class="{ active: borrowerInputs.balanceMode === 'starting-balance' }"
+                    @click="borrowerInputs.balanceMode = 'starting-balance'"
+                  >
+                    Direct balance
+                  </button>
+                </div>
+              </div>
+
+              <template v-if="borrowerInputs.balanceMode === 'build-up'">
+                <div class="field-pair">
+                  <label>
+                    <div class="field-label-row">
+                      <span>Tuition fee per year (£)</span>
+                      <button type="button" class="reset-link" @click="resetField('tuitionFee')">Reset</button>
+                    </div>
+                    <div class="gbp-input">
+                      <input type="number" step="250" v-model.number="borrowerInputs.tuitionFee" />
+                      <span>£</span>
+                    </div>
+                  </label>
+                  <label>
+                    <div class="field-label-row">
+                      <span>Maintenance loan per year (£)</span>
+                      <button type="button" class="reset-link" @click="resetField('maintenanceLoan')">Reset</button>
+                    </div>
+                    <div class="gbp-input">
+                      <input type="number" step="250" v-model.number="borrowerInputs.maintenanceLoan" />
+                      <span>£</span>
+                    </div>
+                  </label>
+                </div>
+              </template>
+              <template v-else>
+                <label>
+                  <div class="field-label-row">
+                    <span>2025 balance (£)</span>
+                    <button type="button" class="reset-link" @click="resetField('startingBalance2025')">Reset</button>
+                  </div>
+                  <div class="gbp-input">
+                    <input type="number" step="500" v-model.number="borrowerInputs.startingBalance2025" />
+                    <span>£</span>
+                  </div>
+                </label>
+              </template>
+
+              <b>Policy changes (compared to status quo, applies from 2026 onward)</b>
+              <div class="control-actions">
+                <button type="button" class="reset-all-btn" @click="resetPolicyFields">Reset policy changes</button>
+              </div>
+              <div class="field-pair">
+                <label>
+                  <div class="field-label-row">
+                    <span>Low interest spread over RPI</span>
+                    <button type="button" class="reset-link" @click="resetField('lowRateSpreadOverRpi')">Reset</button>
+                  </div>
+                  <div class="pct-input">
+                    <input
+                      type="number"
+                      step="0.1"
+                      :value="toPctInput(policyInputs.lowRateSpreadOverRpi)"
+                      @input="updatePctInput('lowRateSpreadOverRpi', $event.target.value)"
+                    />
+                    <span>%</span>
+                  </div>
+                </label>
+                <label>
+                  <div class="field-label-row">
+                    <span>High interest spread over RPI</span>
+                    <button type="button" class="reset-link" @click="resetField('highRateSpreadOverRpi')">Reset</button>
+                  </div>
+                  <div class="pct-input">
+                    <input
+                      type="number"
+                      step="0.1"
+                      :value="toPctInput(policyInputs.highRateSpreadOverRpi)"
+                      @input="updatePctInput('highRateSpreadOverRpi', $event.target.value)"
+                    />
+                    <span>%</span>
+                  </div>
+                </label>
+              </div>
+
+              <div class="field-pair">
+                <label>
+                  <div class="field-label-row">
+                    <span>Repayment rate</span>
+                    <button type="button" class="reset-link" @click="resetField('repaymentRate')">Reset</button>
+                  </div>
+                  <div class="pct-input">
+                    <input
+                      type="number"
+                      step="0.1"
+                      :value="toPctInput(policyInputs.repaymentRate)"
+                      @input="updatePctInput('repaymentRate', $event.target.value)"
+                    />
+                    <span>%</span>
+                  </div>
+                </label>
+                <label>
+                  <div class="field-label-row">
+                    <span>Write-off period (years)</span>
+                    <button type="button" class="reset-link" @click="resetField('writeoffYears')">Reset</button>
+                  </div>
+                  <input type="number" min="20" max="40" step="1" v-model.number="policyInputs.writeoffYears" />
+                </label>
+              </div>
+
+              <div class="field-pair">
+                <label>
+                  <div class="field-label-row">
+                    <span>Lower threshold forecast adjustment</span>
+                    <button type="button" class="reset-link" @click="resetField('lowerThresholdForecastAdj')">Reset</button>
+                  </div>
+                  <div class="pct-input">
+                    <input
+                      type="number"
+                      step="1"
+                      :value="toPctInput(policyInputs.lowerThresholdForecastAdj)"
+                      @input="updatePctInput('lowerThresholdForecastAdj', $event.target.value)"
+                    />
+                    <span>%</span>
+                  </div>
+                </label>
+                <label>
+                  <div class="field-label-row">
+                    <span>Upper threshold forecast adjustment</span>
+                    <button type="button" class="reset-link" @click="resetField('upperThresholdForecastAdj')">Reset</button>
+                  </div>
+                  <div class="pct-input">
+                    <input
+                      type="number"
+                      step="1"
+                      :value="toPctInput(policyInputs.upperThresholdForecastAdj)"
+                      @input="updatePctInput('upperThresholdForecastAdj', $event.target.value)"
+                    />
+                    <span>%</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </section>
+        </aside>
+
+        <main class="right-col">
+          <section class="panel kpis">
+            <h2>Summary Outputs</h2>
+            <p class="face-value-line">Face Value in 2025: <strong>{{ formatCurrency(summary.faceValue2025) }}</strong></p>
+            <div class="compare-card-grid">
+              <article v-for="item in comparisonSummaryCards" :key="item.key">
+                <h3>{{ item.label }}</h3>
+                <p>Status Quo: {{ formatCardValue(item, item.statusQuo) }}</p>
+                <p>Changed: {{ formatCardValue(item, item.changed) }}</p>
+                <p v-if="item.showDelta !== false" class="delta-row">Δ: {{ formatCardDelta(item) }}</p>
+              </article>
+            </div>
+            <br />
+            <h3>Valuations</h3>
+            <div class="valuation-table-wrap">
+              <table class="valuation-table">
+                <thead>
+                  <tr>
+                    <th>Method</th>
+                    <th>Discount Rate</th>
+                    <th>NPV SQ</th>
+                    <th>NPV Changed</th>
+                    <th>NPV Δ</th>
+                    <th>% Face SQ</th>
+                    <th>% Face Changed</th>
+                    <th>% Face Δ</th>
+                    <th>RAB SQ</th>
+                    <th>RAB Changed</th>
+                    <th>RAB Δ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in valuationComparisonRows" :key="row.method">
+                    <td>{{ row.method }}</td>
+                    <td>{{ row.discountRate }}</td>
+                    <td>{{ formatCurrency(row.npvStatusQuo) }}</td>
+                    <td>{{ formatCurrency(row.npvChanged) }}</td>
+                    <td>{{ formatCurrency(row.npvDelta) }}</td>
+                    <td>{{ formatPct(row.pctFaceStatusQuo) }}</td>
+                    <td>{{ formatPct(row.pctFaceChanged) }}</td>
+                    <td>{{ formatPct(row.pctFaceDelta) }}</td>
+                    <td>{{ row.rabChargeStatusQuo === null ? '—' : formatPct(row.rabChargeStatusQuo) }}</td>
+                    <td>{{ row.rabChargeChanged === null ? '—' : formatPct(row.rabChargeChanged) }}</td>
+                    <td>{{ row.rabChargeDelta === null ? '—' : formatPct(row.rabChargeDelta) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel charts">
+            <h2>Balance, Flows & Income</h2>
+
+            <div class="chart-row chart-row-balance">
+              <div class="chart-panel">
+                <h3>Loan Balance by Tax Year Ending</h3>
+                <div class="chart-frame">
+                  <div ref="balanceChart" class="chart"></div>
+                  <div class="chart-legend-overlay">
+                    <span><i class="legend-line legend-line-solid legend-changed"></i>Changed</span>
+                    <span><i class="legend-line legend-line-dashed legend-status-quo"></i>Status quo</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-row chart-row-two-up">
+              <div class="chart-panel">
+                <h3>Annual Flows: Changed Scenario</h3>
+                <div class="chart-frame">
+                  <div ref="flowChartChanged" class="chart"></div>
+                  <div class="chart-legend-overlay">
+                    <span><i class="legend-swatch legend-borrowing"></i>Borrowing</span>
+                    <span><i class="legend-swatch legend-interest"></i>Interest</span>
+                    <span><i class="legend-swatch legend-repayment"></i>Repayment</span>
+                    <span><i class="legend-line legend-line-solid legend-changed"></i>Net change</span>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-panel">
+                <h3>Annual Flows: Status Quo Scenario</h3>
+                <div class="chart-frame">
+                  <div ref="flowChartStatusQuo" class="chart"></div>
+                  <div class="chart-legend-overlay">
+                    <span><i class="legend-swatch legend-borrowing"></i>Borrowing</span>
+                    <span><i class="legend-swatch legend-interest"></i>Interest</span>
+                    <span><i class="legend-swatch legend-repayment"></i>Repayment</span>
+                    <span><i class="legend-line legend-line-solid legend-status-quo"></i>Net change</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-row chart-row-two-up">
+              <div class="chart-panel">
+                <h3>Income with Repayment Share: Changed Scenario</h3>
+                <div class="chart-frame">
+                  <div ref="incomeChartPrimary" class="chart"></div>
+                  <div class="chart-legend-overlay chart-legend-inline">
+                    <span><i class="legend-area legend-income-after-repayment"></i>Income after repayment</span>
+                    <span><i class="legend-line legend-line-solid legend-changed"></i>Income</span>
+                    <span><i class="legend-line legend-line-dashed legend-lower-threshold"></i>Lower threshold</span>
+                    <span><i class="legend-line legend-line-dashed legend-upper-threshold"></i>Upper threshold</span>
+                    <span><i class="legend-line legend-line-dashed legend-share-changed"></i>Repayment share</span>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-panel">
+                <h3>Income with Repayment Share: Status Quo Scenario</h3>
+                <div class="chart-frame">
+                  <div ref="incomeChartSecondary" class="chart"></div>
+                  <div class="chart-legend-overlay chart-legend-inline">
+                    <span><i class="legend-area legend-income-after-repayment"></i>Income after repayment</span>
+                    <span><i class="legend-line legend-line-solid legend-status-quo"></i>Income</span>
+                    <span><i class="legend-line legend-line-dashed legend-lower-threshold"></i>Lower threshold</span>
+                    <span><i class="legend-line legend-line-dashed legend-upper-threshold"></i>Upper threshold</span>
+                    <span><i class="legend-line legend-line-dashed legend-share-status-quo"></i>Repayment share</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel table-panel">
+            <h2>Yearly Model Table</h2>
+            <div class="table-wrap">
+              <table class="yearly-model-table">
+                <thead>
+                  <tr>
+                    <th rowspan="2">Year</th>
+                    <th rowspan="2">Stage</th>
+                    <th rowspan="2">Age</th>
+                    <th rowspan="2">Income</th>
+                    <th
+                      v-for="group in yearlyComparisonDisplayGroups"
+                      :key="`${group.key}-group`"
+                      :colspan="group.hasDifference ? 2 : 1"
+                    >
+                      {{ group.label }}
+                    </th>
+                  </tr>
+                  <tr v-if="yearlyComparisonDisplayGroups.length > 0">
+                    <template v-for="group in yearlyComparisonDisplayGroups" :key="`${group.key}-subheads`">
+                      <th :class="group.columnClass">{{ group.hasDifference ? "SQ" : "SQ=Changed" }}</th>
+                      <th v-if="group.hasDifference" :class="group.columnClass">Changed</th>
+                    </template>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in yearlyComparisonRows" :key="row.year">
+                    <td>{{ row.year }}</td>
+                    <td>{{ row.lifeStage }}</td>
+                    <td>{{ row.age }}</td>
+                    <td>{{ formatCurrency(row.incomeChanged) }}</td>
+                    <template v-for="group in yearlyComparisonDisplayGroups" :key="`${row.year}-${group.key}`">
+                      <td :class="group.columnClass">
+                        {{ formatYearlyComparisonValue(row[group.statusQuoField], group.formatter) }}
+                      </td>
+                      <td v-if="group.hasDifference" :class="group.columnClass">
+                        {{ formatYearlyComparisonValue(row[group.changedField], group.formatter) }}
+                      </td>
+                    </template>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </main>
+      </div>
+
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
