@@ -43,10 +43,10 @@
                 <div class="preset-toggle" role="group" aria-label="Borrower presets">
                   <button
                     type="button"
-                    :class="{ active: isBorrowerPresetActive('high') }"
-                    @click="applyBorrowerPreset('high')"
+                    :class="{ active: isBorrowerPresetActive('low') }"
+                    @click="applyBorrowerPreset('low')"
                   >
-                    High earner
+                    Low earner
                   </button>
                   <button
                     type="button"
@@ -57,11 +57,12 @@
                   </button>
                   <button
                     type="button"
-                    :class="{ active: isBorrowerPresetActive('low') }"
-                    @click="applyBorrowerPreset('low')"
+                    :class="{ active: isBorrowerPresetActive('high') }"
+                    @click="applyBorrowerPreset('high')"
                   >
-                    Low-level earner
+                    High earner
                   </button>
+
                 </div>
               </div>
               <div class="field-pair">
