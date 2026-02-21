@@ -403,8 +403,8 @@ function buildFullSeries(years, inputs) {
       lowerThreshold[year] = SERIES.repaymentThreshold[firstLowerThresholdYear] ?? 27295;
     } else {
       const prev = lowerThreshold[year - 1] ?? 27295;
-      const aweRatio = (awe[year] ?? 1) / (awe[year - 1] ?? 1);
-      lowerThreshold[year] = prev * aweRatio;
+      const rpiUpratingFactor = 1 + (rpi[year] ?? POST_SERIES_RPI);
+      lowerThreshold[year] = prev * rpiUpratingFactor;
     }
 
     if (year in SERIES.higherInterestThreshold) {
@@ -413,8 +413,8 @@ function buildFullSeries(years, inputs) {
       upperThreshold[year] = SERIES.higherInterestThreshold[firstUpperThresholdYear] ?? 52885;
     } else {
       const prev = upperThreshold[year - 1] ?? 52885;
-      const aweRatio = (awe[year] ?? 1) / (awe[year - 1] ?? 1);
-      upperThreshold[year] = prev * aweRatio;
+      const rpiUpratingFactor = 1 + (rpi[year] ?? POST_SERIES_RPI);
+      upperThreshold[year] = prev * rpiUpratingFactor;
     }
   }
 

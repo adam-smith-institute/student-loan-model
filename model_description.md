@@ -25,8 +25,8 @@ This spreadsheet models a **hypothetical UK Plan 2 student loan** for a single b
 | **Low Interest Rate** | 9 | Equals RPI (historical); **3% flat** from 2026 onwards |
 | **High Interest Rate** | 10 | Equals historical rate; **RPI + 3%** (i.e., **6%**) from 2026 onwards |
 | **Average Weekly Earnings Index** | 12 | Historical ONS index (2008 Q1 = 100); forecast from row 13 for future years |
-| **Income Threshold (Repayment)** | 16 | Historical actuals; from 2029 onwards grows with the weekly earnings forecast ratio |
-| **Higher Interest Threshold** | 17 | Historical actuals; from 2030 onwards grows with the weekly earnings forecast ratio |
+| **Income Threshold (Repayment)** | 16 | Historical actuals; once published values end, uprated by annual RPI |
+| **Higher Interest Threshold** | 17 | Historical actuals; once published values end, uprated by annual RPI |
 
 ---
 
@@ -71,8 +71,8 @@ ELSE:                         rate = Low Rate + (income − lower_threshold) /
                                      (upper_threshold − lower_threshold) × (High Rate − Low Rate)
 ```
 
-- **Lower threshold** (row 16): £27,295 (frozen 2022–2025), then grows with wages
-- **Upper threshold** (row 17): ~£49,130–£52,885 range, then grows with wages
+- **Lower threshold** (row 16): £27,295 (frozen 2022–2025), then uprated with annual RPI
+- **Upper threshold** (row 17): ~£49,130–£52,885 range, then uprated with annual RPI
 
 ---
 
@@ -182,7 +182,7 @@ Contains historical look-up tables used to populate the model's time series:
 2. **Circular reference protection**: Mid-year balance (`Row 33`) is calculated as `previous_year_closing + new_borrowing/2`, avoiding a true circular reference.
 3. **Write-off**: At exactly **30 years after graduation**, the balance drops to zero. The final year's repayment is still collected but interest is not added to the balance.
 4. **Repayment cap in write-off year**: In the write-off year (AO/2046), the repayment formula changes slightly — it's capped at `mid-year_balance` only (not `mid-year_balance + interest`).
-5. **Wage forecasting**: After actuals end (~2024), the AWE index is projected using a separate forecast series (Row 13), and thresholds grow proportionally with the AWE forecast ratio year-on-year.
+5. **Wage forecasting**: After actuals end (~2024), the AWE index is projected using a separate forecast series (Row 13), while repayment and interest thresholds are uprated year-on-year using RPI.
 6. **Interest rate from 2026+**: Low rate = 3% flat; High rate = 6% flat (3% + 3%). Before 2026, historical rates are used.
 7. **All repayments are annual** — no monthly compounding.
 

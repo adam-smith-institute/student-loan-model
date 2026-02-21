@@ -20,7 +20,7 @@ The model assumes the borrower is continuously and fully employed throughout the
 
 RPI inflation is taken from historical data through 2025, then assumed to run at approximately 3% per year through 2029 before settling at a long-run rate of **2.1% per year** from 2030 onward. The AWE series similarly uses historical data through the mid-2020s and then extrapolates forward at the most recently observed growth rate.
 
-Repayment thresholds — both the lower threshold (below which no repayment is due) and the upper threshold (above which the maximum interest rate applies) — are taken from published government figures where known, and projected to grow in line with AWE once the published series runs out.
+Repayment thresholds — both the lower threshold (below which no repayment is due) and the upper threshold (above which the maximum interest rate applies) — are taken from published government figures where known, and projected to grow in line with RPI once the published series runs out.
 
 ### Interest Rate Mechanics
 
