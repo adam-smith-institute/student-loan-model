@@ -40,6 +40,16 @@ const BORROWER_PRESETS = {
     startingSalary: 16000,
   },
 };
+const POLICY_PRESETS = {
+  palmer: {
+    lowRateSpreadOverRpi: 0,
+    highRateSpreadOverRpi: 0,
+    repaymentRate: 0.05,
+    writeoffYears: 40,
+    lowerThresholdForecastAdj: -0.33,
+    upperThresholdForecastAdj: -0.33,
+  },
+};
 
 const BORROWER_FIELD_NAMES = Object.keys(DEFAULT_BORROWER_INPUTS);
 const POLICY_FIELD_NAMES = Object.keys(DEFAULT_POLICY_INPUTS);
@@ -1112,6 +1122,17 @@ createApp({
       );
     }
 
+    function applyPolicyPreset(presetName) {
+      const preset = POLICY_PRESETS[presetName];
+      if (!preset) return;
+
+      for (const [field, value] of Object.entries(preset)) {
+        if (field in policyInputs) {
+          policyInputs[field] = value;
+        }
+      }
+    }
+
     async function shareScenario() {
       syncUrlWithInputs(borrowerInputs, policyInputs);
       const shareUrl = window.location.href;
@@ -1172,6 +1193,7 @@ createApp({
       resetAllFields,
       applyBorrowerPreset,
       isBorrowerPresetActive,
+      applyPolicyPreset,
       shareScenario,
     };
   },
